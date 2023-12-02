@@ -30,11 +30,13 @@ pub fn main() !void {
         var isFirst = true;
         // std.debug.print("LINE: {s}\n", .{line});
         for (line, 0..) |i, idx| {
+            // _ = i;
             temp = 0;
 
             // var to_idx = if (line.len - idx >= 3) idx + 3 else idx;
             if (line.len - idx >= 3) {
                 for (line[idx .. idx + 3]) |id| {
+                    // for (line[idx..to_idx]) |id| {
                     if (std.ascii.isDigit(id)) {
                         if (isFirst) {
                             nums[0] = id;
