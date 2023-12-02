@@ -28,7 +28,7 @@ pub fn main() !void {
         var temp: u32 = 0;
         var nums: [2]u8 = .{};
         var isFirst = true;
-        std.debug.print("LINE: {s}\n", .{line});
+        // std.debug.print("LINE: {s}\n", .{line});
         for (line, 0..) |i, idx| {
             temp = 0;
 
@@ -68,12 +68,9 @@ pub fn main() !void {
                     }
                 }
             }
-            if (idx == line.len - 1) {
-                // std.debug.print("Numbers: {c}\n", .{nums});
-                temp = std.fmt.parseInt(u8, &nums, 10) catch @panic("error while parsing char");
-                values = values + temp;
-            }
         }
+        temp = std.fmt.parseInt(u8, &nums, 10) catch @panic("error while parsing char");
+        values = values + temp;
     }
     std.debug.print("value: {}\n", .{values});
 }
