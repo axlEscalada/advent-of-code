@@ -11,6 +11,7 @@ pub fn main() void {
     // std.debug.print("{s}\n", .{file});
     var lines = std.mem.tokenizeAny(u8, file, "\n");
     var sumGames: usize = 0;
+    var sum_minimun_cubes: usize = 0;
     while (lines.next()) |line| {
         var colon = indexOf(line, ':').?;
         var games = line[0..colon];
@@ -39,10 +40,12 @@ pub fn main() void {
             // std.debug.print("GAME: {}\n", .{gameNumber});
             sumGames = sumGames + gameNumber;
         }
+        sum_minimun_cubes = sum_minimun_cubes + (red * blue * green);
         // std.debug.print("Blue {} Green {} Red {}\n", .{ blue, green, red });
         // std.debug.print("Games: {s} | cubes: {s}\n", .{ games, cubes });
     }
     std.debug.print("SUM GAMES: {}\n", .{sumGames});
+    std.debug.print("SUM : {}\n", .{sum_minimun_cubes});
 }
 
 fn contains(target: []const u8, match: []const u8) bool {
