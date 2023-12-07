@@ -8,7 +8,7 @@ const map_colors = blk: {
 
 pub fn main() void {
     const file = @embedFile("input-1");
-    std.debug.print("{s}\n", .{file});
+    // std.debug.print("{s}\n", .{file});
     var lines = std.mem.tokenizeAny(u8, file, "\n");
     var sumGames: usize = 0;
     while (lines.next()) |line| {
@@ -36,6 +36,7 @@ pub fn main() void {
         if (map_colors.get("red").? >= red and map_colors.get("blue").? >= blue and
             map_colors.get("green").? >= green)
         {
+            // std.debug.print("GAME: {}\n", .{gameNumber});
             sumGames = sumGames + gameNumber;
         }
         // std.debug.print("Blue {} Green {} Red {}\n", .{ blue, green, red });
@@ -57,11 +58,12 @@ fn contains(target: []const u8, match: []const u8) bool {
 }
 
 fn getNumber(target: []const u8) u16 {
-    // std.debug.print("TAGET: {s}\n", .{target});
     for (target, 0..) |t, i| {
         if (std.ascii.isDigit(t)) {
-            if (i == target.len - 1) return std.fmt.parseInt(u16, target[i..], 10) catch @panic("error while parsing to int");
             for (target[i..], 0..) |n, idx| {
+                if (i + idx == target.len - 1) {
+                    return std.fmt.parseInt(u16, target[i..], 10) catch @panic("error while parsing to int");
+                }
                 if (!std.ascii.isDigit(n)) {
                     return std.fmt.parseInt(u16, target[i .. i + idx], 10) catch @panic("error while parsing to int");
                 }
