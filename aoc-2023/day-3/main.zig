@@ -22,7 +22,7 @@ pub fn main() void {
             var end_of_num: usize = 0;
             for (line, 0..) |l, idx| {
                 // std.debug.print("Line: {} IDX:{} num IDX: {}\n", .{ i, idx, end_of_num });
-                if (end_of_num > 0 and end_of_num >= idx) continue;
+                if (end_of_num > 0 and end_of_num > idx) continue;
                 if (!std.ascii.isDigit(l) and l != '.') {
                     var symbol = Symbol{ .index = idx, .line = i, .symbol = l };
                     symbols.append(symbol) catch @panic("Error while storing symbol");
@@ -51,20 +51,40 @@ pub fn main() void {
     // std.debug.print("LEN: {}\n", .{slice.len});
 
     for (slice) |s| {
-        // std.debug.print("Symbol {} char {c}\n", .{ s, s.symbol });
+        std.debug.print("Symbol {} char {c}\n", .{ s, s.symbol });
         for (num_slice) |num| {
             // std.debug.print("INDEX SYM: {} SYM LINE: {} NUM LINE: {} NUM START: {} NUM END: {} NUM: {}\n", .{ s.index, s.line, num.line, num.start, num.end, num.number });
             // if (!num.already_sum and num.number == 734) {
             //     std.debug.print("sym: {} idx: {} IS 734: {}, is line: {}\n", .{ s.symbol, s.index, s.index == num.start - 1, s.line == num.line });
             // }
             if (!num.already_sum) {
-                if (s.line == num.line and (num.start > 0 and s.index == num.start - 1 or s.index == num.end + 1)) {
-                    std.debug.print("NUMBNERS INLINE: {} lit {}\n", .{ num, num.number });
-                    sum = sum + num.number;
-                    num.already_sum = true;
-                } else if ((num.start == 0 and s.index >= num.start and s.index <= num.end + 1) or (num.start > 0 and s.index >= num.start - 1 and s.index <= num.end + 1)) {
+                //should match cases:  100= or =100... or ..100=
+                if (s.line == num.line) {
+                    // std.debug.print("NUMBNERS INLINE: {} lit {}\n", .{ num, num.number });
+                    if (s.index == num.end + 1) {
+                        //case -> ...100=
+                        std.debug.print("NUMBNERS INLINE: {} lit {}\n", .{ num, num.number });
+                        sum = sum + num.number;
+                        num.already_sum = true;
+                    } else if (num.start > 0 and s.index == num.start - 1) {
+                        //case -> =100
+                        std.debug.print("NUMBNERS INLINE: {} lit {}\n", .{ num, num.number });
+                        sum = sum + num.number;
+                        num.already_sum = true;
+                    }
+                    // else if (num.start == 0 and s.index == num.start) {
+                    //     //case ->
+                    //     std.debug.print("NUMBNERS INLINE: {} lit {}\n", .{ num, num.number });
+                    //     sum = sum + num.number;
+                    //     num.already_sum = true;
+                    // }
+                }
+                //should match case:
+                // 830...59
+                // ...*..*..
+                if ((num.start == 0 and s.index >= num.start and s.index <= num.end + 1) or (num.start > 0 and s.index >= num.start - 1 and s.index <= num.end + 1)) {
                     if (s.line == num.line + 1 or (num.line > 0 and s.line == num.line - 1)) {
-                        // std.debug.print("NUMBNERS: {} lit {}\n", .{ num, num.number });
+                        std.debug.print("NUMBNERS: {} lit {}\n", .{ num, num.number });
                         sum = sum + num.number;
                         num.already_sum = true;
                     }
