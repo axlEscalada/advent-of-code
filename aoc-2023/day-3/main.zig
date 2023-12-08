@@ -22,7 +22,8 @@ pub fn main() void {
             var end_of_num: usize = 0;
             for (line, 0..) |l, idx| {
                 // std.debug.print("Line: {} IDX:{} num IDX: {}\n", .{ i, idx, end_of_num });
-                if (end_of_num > 0 and end_of_num > idx) continue;
+                // std.debug.print("Lines: {c} idx: {}\n", .{ l, idx });
+                if (end_of_num > 0 and (end_of_num > idx or end_of_num == line.len - 1)) continue;
                 if (!std.ascii.isDigit(l) and l != '.') {
                     var symbol = Symbol{ .index = idx, .line = i, .symbol = l };
                     symbols.append(symbol) catch @panic("Error while storing symbol");
@@ -30,10 +31,16 @@ pub fn main() void {
                     var start = idx;
                     for (line[idx..], 0..) |num, num_i| {
                         end_of_num = idx + num_i;
-                        if (!std.ascii.isDigit(num) or idx + num_i == line.len) {
-                            // std.debug.print("END: {}\n", .{end_of_num});
-                            // end_of_num = 0;
-                            var parsed = std.fmt.parseInt(u32, line[idx .. idx + num_i], 10) catch @panic("error while parsing to number");
+                        if (!std.ascii.isDigit(num)) {
+                            // std.debug.print("IDX: {} IDX_2: {} SLICE: {s}\n", .{ idx, num_i, line[idx..end_of_num] });
+                            var parsed = std.fmt.parseInt(u32, line[idx..end_of_num], 10) catch @panic("error while parsing to number");
+                            var number = allocator.create(Number) catch @panic("error while alloc number");
+                            number.* = Number{ .line = i, .start = start, .end = idx + num_i - 1, .number = parsed, .already_sum = false };
+                            numbers.append(number) catch @panic("error while trying to store a number");
+                            break;
+                        } else if (end_of_num == line.len - 1) {
+                            // std.debug.print("IDX: {} IDX_2: {} SLICE TO END: {s}\n", .{ idx, num_i, line[idx..] });
+                            var parsed = std.fmt.parseInt(u32, line[idx..], 10) catch @panic("error while parsing to number");
                             var number = allocator.create(Number) catch @panic("error while alloc number");
                             number.* = Number{ .line = i, .start = start, .end = idx + num_i - 1, .number = parsed, .already_sum = false };
                             numbers.append(number) catch @panic("error while trying to store a number");
@@ -49,6 +56,12 @@ pub fn main() void {
     var num_slice = numbers.toOwnedSlice() catch @panic("error while gettin numbers slice");
     defer allocator.free(num_slice);
     // std.debug.print("LEN: {}\n", .{slice.len});
+    // for (num_slice) |num| {
+    //     std.debug.print("NUMBER: {}\n", .{num.number});
+    // }
+    // for (slice) |s| {
+    //     std.debug.print("SYMNOL: {c}\n", .{s.symbol});
+    // }
 
     for (slice) |s| {
         std.debug.print("Symbol {} char {c}\n", .{ s, s.symbol });
@@ -57,28 +70,29 @@ pub fn main() void {
             // if (!num.already_sum and num.number == 734) {
             //     std.debug.print("sym: {} idx: {} IS 734: {}, is line: {}\n", .{ s.symbol, s.index, s.index == num.start - 1, s.line == num.line });
             // }
-            if (!num.already_sum) {
-                //should match cases:  100= or =100... or ..100=
-                if (s.line == num.line) {
-                    // std.debug.print("NUMBNERS INLINE: {} lit {}\n", .{ num, num.number });
-                    if (s.index == num.end + 1) {
-                        //case -> ...100=
-                        std.debug.print("NUMBNERS INLINE: {} lit {}\n", .{ num, num.number });
-                        sum = sum + num.number;
-                        num.already_sum = true;
-                    } else if (num.start > 0 and s.index == num.start - 1) {
-                        //case -> =100
-                        std.debug.print("NUMBNERS INLINE: {} lit {}\n", .{ num, num.number });
-                        sum = sum + num.number;
-                        num.already_sum = true;
-                    }
-                    // else if (num.start == 0 and s.index == num.start) {
-                    //     //case ->
-                    //     std.debug.print("NUMBNERS INLINE: {} lit {}\n", .{ num, num.number });
-                    //     sum = sum + num.number;
-                    //     num.already_sum = true;
-                    // }
+            // if (!num.already_sum) {
+            //should match cases:  100= or =100... or ..100=
+            if (s.line == num.line) {
+                // std.debug.print("INDEX SYM: {} SYM LINE: {} NUM LINE: {} NUM START: {} NUM END: {} NUM: {}\n", .{ s.index, s.line, num.line, num.start, num.end, num.number });
+                // std.debug.print("NUMBNERS INLINE: {} lit {}\n", .{ num, num.number });
+                if (s.index == num.end + 1) {
+                    //case -> ...100=
+                    std.debug.print("NUMBNERS INLINE: {} lit {}\n", .{ num, num.number });
+                    sum = sum + num.number;
+                    // num.already_sum = true;
+                } else if (num.start > 0 and s.index == num.start - 1) {
+                    //case -> =100
+                    std.debug.print("NUMBNERS INLINE: {} lit {}\n", .{ num, num.number });
+                    sum = sum + num.number;
+                    // num.already_sum = true;
                 }
+                // else if (num.start == 0 and s.index == num.start) {
+                //     //case ->
+                //     std.debug.print("NUMBNERS INLINE: {} lit {}\n", .{ num, num.number });
+                //     sum = sum + num.number;
+                //     num.already_sum = true;
+                // }
+            } else {
                 //should match case:
                 // 830...59
                 // ...*..*..
@@ -86,13 +100,14 @@ pub fn main() void {
                     if (s.line == num.line + 1 or (num.line > 0 and s.line == num.line - 1)) {
                         std.debug.print("NUMBNERS: {} lit {}\n", .{ num, num.number });
                         sum = sum + num.number;
-                        num.already_sum = true;
+                        // num.already_sum = true;
                     }
                 }
             }
         }
+        // }
     }
-    std.debug.print("NUMBER: {}\n", .{sum});
+    std.debug.print("SUMA: {}\n", .{sum});
 }
 
 const Symbol = struct {
